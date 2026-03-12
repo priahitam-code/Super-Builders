@@ -368,6 +368,14 @@ jobs:
         else
           cd "$KERNEL_COMMON"
 
+          echo "::group::KSU Integration Check"
+          echo "PWD=$(pwd) -> $(realpath .)"
+          ls -la drivers/kernelsu/ 2>/dev/null || echo "MISSING: drivers/kernelsu/"
+          grep -n "kernelsu" drivers/Makefile 2>/dev/null || echo "MISSING: kernelsu in drivers/Makefile"
+          grep -n "kernelsu" drivers/Kconfig 2>/dev/null || echo "MISSING: kernelsu in drivers/Kconfig"
+          grep "CONFIG_KSU" arch/arm64/configs/gki_defconfig 2>/dev/null | head -5 || echo "MISSING: CONFIG_KSU in defconfig"
+          echo "::endgroup::"
+
           REAL_CLANG=$(command -v clang)
           printf '#!/bin/bash\nargs=()\nfor a in "$@"; do [[ "$a" == -Werror* ]] || args+=("$a"); done\nexec "%s" "${args[@]}"\n' "$REAL_CLANG" > /tmp/clang-no-werror
           chmod +x /tmp/clang-no-werror
@@ -377,6 +385,8 @@ jobs:
             OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
             CROSS_COMPILE=aarch64-linux-gnu- \
             gki_defconfig
+
+          grep "CONFIG_KSU" out/.config 2>/dev/null | head -5 || echo "WARN: CONFIG_KSU not in .config after defconfig"
 
           make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 \
             CC=/tmp/clang-no-werror LD=ld.lld AR=llvm-ar NM=llvm-nm \
