@@ -380,8 +380,8 @@ jobs:
           "$PATCH_DIR/60_zeromount-${GKI_TAG}.patch"; do
           [ -f "$PFILE" ] || continue
           while IFS= read -r cfile; do
-            TARGETS+=("${cfile%.c}.o")
-          done < <(grep '^diff --git' "$PFILE" | sed 's|diff --git a/||; s| b/.*||' | grep '\.c$' | sort -u)
+            [ -n "$cfile" ] && TARGETS+=("${cfile%.c}.o")
+          done < <(grep '^+++ b/' "$PFILE" | sed 's|^+++ b/||; s|[[:space:]].*||' | grep '\.c$' | sort -u)
         done
 
         for dir in fs/susfs fs/zeromount; do
