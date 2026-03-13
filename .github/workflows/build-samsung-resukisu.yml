@@ -361,6 +361,7 @@ jobs:
         else
           echo "No working prebuilt clang — installing system clang"
           sudo apt-get -qq install -y clang lld llvm >/dev/null 2>&1
+          export KCFLAGS="${KCFLAGS:+$KCFLAGS }-Wno-error"
         fi
 
         # Apply LTO override if not default
