@@ -35,6 +35,10 @@ CONFIG_MODVERSIONS=y
 CONFIG_TRIM_UNUSED_KSYMS=n
 EOF
 
+if [ "$ADD_SUSFS" != "true" ]; then
+  echo "# CONFIG_KSU_SUSFS is not set" >> "$DEFCONFIG"
+fi
+
 if [ "$ADD_SUSFS" = "true" ]; then
   cat >> "$DEFCONFIG" << 'EOF'
 CONFIG_KSU_SUSFS=y

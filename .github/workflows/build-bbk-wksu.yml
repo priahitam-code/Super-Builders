@@ -417,6 +417,9 @@ jobs:
           bash "$HELPERS/assemble-defconfig.sh" "$FRAGMENT" "$DEFCONFIG_FRAGMENT" "$DEFCONFIG" $ASSEMBLE_FLAGS
         fi
 
+        # Wild_KSU Kconfig defaults KSU_SUSFS=y — explicitly disable when not requested
+        [[ "$ADD_SUSFS" != "true" ]] && echo "# CONFIG_KSU_SUSFS is not set" >> "$DEFCONFIG"
+
     - name: Build Kernel
       working-directory: ${{ env.SYNC_DIR }}
       env:

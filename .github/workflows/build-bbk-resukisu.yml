@@ -322,6 +322,12 @@ jobs:
           echo "Pinned ReSukiSU to $(git rev-parse --short=7 HEAD)"
         fi
 
+        # syscall_handler.o missing from upstream Kbuild — needed for non-SUSFS builds
+        KBUILD="drivers/kernelsu/Kbuild"
+        if [ -f "$KBUILD" ] && [ -f "drivers/kernelsu/syscall_handler.c" ] && ! grep -q "syscall_handler" "$KBUILD"; then
+          sed -i '/supercalls\.o/a ksu_obj-y += syscall_handler.o' "$KBUILD"
+        fi
+
     - name: Fix Old Kernel Compatibility
       working-directory: ${{ env.KERNEL_COMMON }}
       run: |
@@ -416,6 +422,9 @@ jobs:
           [[ "$ADD_ZRAM" == "true" ]] && ASSEMBLE_FLAGS="$ASSEMBLE_FLAGS --zram"
           bash "$HELPERS/assemble-defconfig.sh" "$FRAGMENT" "$DEFCONFIG_FRAGMENT" "$DEFCONFIG" $ASSEMBLE_FLAGS
         fi
+
+        # Explicitly disable KSU_SUSFS when not requested (some KSU variants default it on)
+        [[ "$ADD_SUSFS" != "true" ]] && echo "# CONFIG_KSU_SUSFS is not set" >> "$DEFCONFIG"
 
     - name: Build Kernel
       working-directory: ${{ env.SYNC_DIR }}
